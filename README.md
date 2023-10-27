@@ -1,6 +1,6 @@
 # Jab <img src='https://upload.wikimedia.org/wikipedia/commons/8/86/Google_JAX_logo.svg' alt="Environment" width="50" />
 
-![image](https://github.com/RPegoud/jab/assets/60786847/d69f5007-9362-41f0-a16f-fa2aad6492ff)
+![image](https://github.com/RPegoud/jab/assets/60786847/896e0655-b102-4e96-8d83-edb74b50ab81)
 
 Welcome to the JAX Lab (JAB for short)! This repository contains implementations of foundational Deep Learning architectures in JAX.
 
