@@ -4,11 +4,12 @@
 
 Welcome to the JAX Lab (JAB for short)! This repository contains implementations of foundational Deep Learning architectures in JAX.
 
-
 ## ✅ ***Progress***
+
 *We're still in the early days of Jab, more implementations coming soon ;)*
 
 ## 🚀 ***In progress***
+
 * Transformer
 
 ## 💾 Installation
