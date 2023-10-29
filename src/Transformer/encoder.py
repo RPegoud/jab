@@ -7,6 +7,19 @@ from jax import jit, lax, random, vmap
 
 
 class Encoder:
+    """
+    Transformer encoder for sequence-to-sequence tasks
+
+    Attributes:
+        vocab_size (int): Size of the vocabulary
+        embed_dim (int): Dimension of the embeddings
+        seq_len (int): Sequence length
+        batch_size (int): Number of sequences processed simultaneously
+        n_heads (int): Number of parallel attention heads
+        d_k (int): Dimension of the embeddings passing through each attention head
+        hidden_dim (int): Dimension of the FFN's hidden layer
+    """
+
     def __init__(
         self,
         vocab_size: int,
@@ -30,9 +43,20 @@ class Encoder:
         key: random.PRNGKey,
         tokenized_sequences: jnp.array,
     ):
+        """
+        Creates and applies an embedding layer for tokenized sequences.
+
+        Args:
+            key (random.PRNGKey): Random key for initialization.
+            tokenized_sequences (jnp.array): Tokenized input sequences.
+
+        Returns:
+            jnp.array: Embedded sequences.
+        """
+
         def _embed_fn():
             """
-            creates a learnable lookup table of size vocab_size x embedding_dim
+            Creates a learnable lookup table of shape (vocab_size, embedding_dim)
             """
             embedding_layer = hk.Embed(self.vocab_size, embed_dim=self.embed_dim)
             return embedding_layer(tokenized_sequences)
@@ -44,9 +68,17 @@ class Encoder:
     @staticmethod
     @jit
     @partial(vmap, in_axes=(None, 0, None), out_axes=(1))
-    def batched_positional_encoding(pos: int, dim: int, embed_dim: int):
+    def batched_positional_encoding(pos: jnp.array, dim: jnp.array, embed_dim: int):
         """
-        Returns embed_dim encodings for a batched sequence of tokens
+        Returns positional encodings for a batched sequence of tokens
+
+        Args:
+            pos (jnp.array): The positions of each token in the sequence
+            dim (jnp.array): The embedding dimensions to be encoded
+            embed_dim (int): Dimension of the embeddings
+
+        Returns:
+            jnp.array: A matrix of positional encodings of shape (batch_size, seq_len, embed_dim)
         """
 
         def _even_encoding():
@@ -64,8 +96,15 @@ class Encoder:
         scale: float = 1.0,
     ):
         """
-        Initializes the Q, K, V weight vectors using the random normal distr
-        These vectors have shape (N_HEADS, EMBED_DIM, D_K)
+        Initializes the Q, K, V weight vectors using the random normal distribution
+
+        Args:
+            key (random.PRNGKey): Random key for distribution sampling
+            scale (optional, float): A scaling factor applied to the random normal distribution
+
+        Returns:
+            WQ, WK, WV (jnp.array): The sampled attention weight vectors of shape (n_heads, embed_dim, d_k)
+            random.PRNGKey: Random key after splitting
         """
         key, subkey = random.split(key)
         # QW, KW and VW have shape (embed_dim, d_k)
@@ -81,20 +120,36 @@ class Encoder:
     @staticmethod
     @jit
     @partial(vmap, in_axes=(0, 0, 0, None))
-    def get_multihead_Q_K_V_matrices(QW, KW, VW, positional_embeddings):
+    def get_multihead_Q_K_V_matrices(WQ, WK, WV, positional_embeddings):
         """
-        Returns the Querries, Keys and Values as matrices of
-        shape (BATCH_SIZE, SEQ_LEN, D_K)
+        Computes matrix multiplication of attention vectors and positional embeddings
+
+        Args:
+            WQ, WK, WV (jnp.array): The attention vectors
+            positonal_embeddings (jnp.array): Sum of embeddings and positional encodings,
+                                              shape (batch_size, seq_len, embed_dim)
+        Returns:
+            jnp.array: Q, K and V attention matrices with shape (batch_size, seq_len, d_k)
         """
-        Q = jnp.matmul(positional_embeddings, QW)
-        K = jnp.matmul(positional_embeddings, KW)
-        V = jnp.matmul(positional_embeddings, VW)
+        Q = jnp.matmul(positional_embeddings, WQ)
+        K = jnp.matmul(positional_embeddings, WK)
+        V = jnp.matmul(positional_embeddings, WV)
         return Q, K, V
 
     @staticmethod
     @jit
     @partial(vmap, in_axes=(0, 0, 0, None))  # iterate over the heads
-    def attention(Q, K, V, d_k: int):
+    def multihead_attention(Q, K, V, d_k: int):
+        """
+        Computes the attention scores from the attention matrices
+
+        Args:
+            Q, K, V (jnp.array): Attention matrices with shape (batch_size, seq_len, d_k)
+            d_k (int): Dimension of the attention vectors passed through each attention head
+
+        Returns:
+            jnp.array: Attention scores with shape (n_heads, batch_size, seq_len, d_k)
+        """
         # transpose to (N_HEADS, BATCH_SIZE, D_K, SEQ_LEN)
         attention_score = jnp.matmul(Q, K.transpose(0, 2, 1))
         # softmax along the SEQ_LEN dimension
@@ -107,7 +162,22 @@ class Encoder:
         attention_matrix: jnp.array,
     ):
         """
-        Linear transformation performed after the multi-head attention block
+        Linear transformation performed after the multi-head attention block.
+        The attention_matrix is the concatenation of the attention matrices obtained by each
+        attention head. If needed, the following code converts the attention matrices from shape
+        (n_heads, batch_size, seq_len, d_k) to (batch_size, seq_len, embed_dim):
+
+        ```python
+        attention_matrix.transpose(1, 2, 0, 3).reshape(BATCH_SIZE, SEQ_LEN, -1)
+        ```
+
+        Args:
+            key (random.PRNGKey): Random key for weights initialization
+            attention_matrix (jnp.array): Attention matrix after Multihead Attention with
+            shape (batch_size, seq_len, embed_dim)
+
+        Returns:
+            jnp.array: The attention matrix passed through the linear layer, shape (batch_size, seq_len, embed_dim)
         """
 
         @hk.transform
@@ -119,12 +189,17 @@ class Encoder:
 
     @hk.transform
     def layer_norm(
-        x: jnp.array, key: random.PRNGKey, name: str, epsilon=1e-6, axis: int = -1
+        key: random.PRNGKey, x: jnp.array, name: str, epsilon=1e-6, axis: int = -1
     ):
         """
-        Layer Normalization across the embedding dimension, per default
-        the embedding dimension comes last
-        @name: str, identifies the layer norm block (e.g. "post_attention" or "post_fnn")
+        Layer Normalization across the embedding dimension, per default the embedding dimension comes last.
+
+        Args:
+            x (jnp.array): The matrix to normalize
+            key (random.PRNGKey): Random key for parameter initialization
+            name (str): Identifies the layer norm parameters to retrive (e.g. "post_attention" or "post_fnn")
+            epsilon (optional, float): A small constant added for numerical stability, 1e-6 per default
+            axis (optional, int): The feature to normalize, -1 per default
         """
 
         def _layer_norm_fn():
@@ -150,9 +225,12 @@ class Encoder:
     @hk.transform
     def feed_forward_net(self, key: random.PRNGKey, x: jnp.array):
         """
-        Simple feed-forward network with two linear layer
-        and relu activation
+        Simple feed-forward network with two linear layers and gelu activation.
         FFN(x) = gelu(xW1 + b1)W2 + b2
+
+        Args:
+            key (random.PRNGKey): Random key for parameter initialization
+            x (jnp.array): Normalized attention matrix with shape (batch_size, seq_len, embed_dim)
         """
 
         def _feed_forward_fn():
