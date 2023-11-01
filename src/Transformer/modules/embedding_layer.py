@@ -28,7 +28,7 @@ class EmbeddingLayer(hk.Module):
         self.vocab_size = vocab_size
         self.seq_len = seq_len
 
-    def __call__(self, x: jnp.array) -> jnp.array:
+    def __call__(self, x: jnp.ndarray) -> jnp.ndarray:
         """
         Converts sequences of integers to positional embeddings (embeddings + positional encoddings).
 
@@ -49,24 +49,24 @@ class EmbeddingLayer(hk.Module):
 
     @partial(jit, static_argnums=(0))
     @partial(vmap, in_axes=(None, None, 0), out_axes=(1))  # iterate over the dimensions
-    def _batched_positional_encoding(self, pos: jnp.array, dim: jnp.array):
+    def _batched_positional_encoding(self, pos: jnp.ndarray, dim: jnp.ndarray):
         """
         Returns a positional encoding matrix for batched sequences.
 
         Args:
-            pos (jnp.array): An array containing the sequence positions,
+            pos (jnp.ndarray): An array containing the sequence positions,
             typically obtained with:
             ```python
             pos = jnp.arange(seq_len)
             ```
-            dim (jnp.array): An array containing the embedding dimensions,
+            dim (jnp.ndarray): An array containing the embedding dimensions,
             typically obtained with:
             ```python
             dim = jnp.arange(embed_dim)
             ```
 
         Returns:
-            jnp.array: An matrix of positional encodings
+            jnp.ndarray: An matrix of positional encodings
         """
 
         def _even_encoding():

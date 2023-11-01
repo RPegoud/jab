@@ -32,7 +32,7 @@ class Multihead_Attention(hk.Module):
         self.n_heads = n_heads
         self.d_k = d_k
 
-    def __call__(self, x: jnp.array):
+    def __call__(self, x: jnp.ndarray):
         WQ, WK, WV = self._init_attention_weights()
         Q, K, V = self._get_multihead_Q_K_V_matrices(WQ, WK, WV, x)
         attention_matrices = self._multihead_attention(Q, K, V)
@@ -54,7 +54,7 @@ class Multihead_Attention(hk.Module):
         With distribution=uniform, samples are drawn from a uniform distribution within [-limit, limit], with limit = sqrt(3 * s).
 
         Returns:
-            WQ, WK, WV (jnp.array): The sampled attention weight vectors of shape (n_heads, embed_dim, d_k)
+            WQ, WK, WV (jnp.ndarray): The sampled attention weight vectors of shape (n_heads, embed_dim, d_k)
             random.PRNGKey: Random key after splitting
         """
 
@@ -91,12 +91,12 @@ class Multihead_Attention(hk.Module):
         Computes matrix multiplication of attention vectors and positional embeddings.
 
         Args:
-            WQ, WK, WV (jnp.array): The attention vectors
-            positonal_embeddings (jnp.array): Sum of embeddings and positional encodings,
+            WQ, WK, WV (jnp.ndarray): The attention vectors
+            positonal_embeddings (jnp.ndarray): Sum of embeddings and positional encodings,
             with shape (batch_size, seq_len, embed_dim)
 
         Returns:
-            jnp.array: Q, K and V attention matrices with shape (batch_size, seq_len, d_k)
+            jnp.ndarray: Q, K and V attention matrices with shape (batch_size, seq_len, d_k)
         """
 
         return jax.tree_map(
@@ -111,11 +111,11 @@ class Multihead_Attention(hk.Module):
         Scaled Dot-Product Attention = softmax(Q @ K.T / sqrt(d_k)) @ V
 
         Args:
-            Q, K, V (jnp.array): Attention matrices with shape (batch_size, seq_len, d_k)
+            Q, K, V (jnp.ndarray): Attention matrices with shape (batch_size, seq_len, d_k)
             d_k (int): Dimension of the attention vectors passed through each attention head
 
         Returns:
-            jnp.array: Attention scores with shape (n_heads, batch_size, seq_len, d_k)
+            jnp.ndarray: Attention scores with shape (n_heads, batch_size, seq_len, d_k)
         """
 
         # transpose K to (N_HEADS, BATCH_SIZE, D_K, SEQ_LEN)

@@ -54,7 +54,7 @@ class Encoder(hk.Module):
             embed_dim, hidden_dim, name="FeedForward_Net"
         )
 
-    def __call__(self, x: jnp.ndarray):
+    def __call__(self, x: jnp.ndarray) -> jnp.ndarray:
         """
         Forward pass through the encoder block.
         Order of transformation:
@@ -66,18 +66,19 @@ class Encoder(hk.Module):
         - Apply a residual connection (attention matrix + feed-forward net output) and layer norm on the embedding dimension => shape (batch_size, seq_length, embed_dim)
 
         Args:
-            x (jnp.array): A batched sequence of encoded tokens with shape (batch_size, seq_length)
+            x (jnp.array): A batched sequence of encoded tokens with shape (batch_size, seq_len)
 
         Returns:
-            jnp.array: The output of the encoder block
+            jnp.array: The output of the encoder block, shape (batch_size, seq_len, embed_dim)
 
         """
         embeddings = self.embedding_layer(x)
-        x = self.multihead_attention(embeddings)
-        residual_connection = x + embeddings
-        attention_matrix = self.post_attention_layer_norm(residual_connection)
-        x = self.feedforward_net(attention_matrix)
-        residual_connection = x + attention_matrix
-        out = self.post_feedforward_layer_norm(residual_connection)
+        attention_matrices = self.multihead_attention(embeddings)
+        normalized_residual_attention = self.post_attention_layer_norm(
+            attention_matrices + embeddings
+        )
+        feedforward_outputs = self.feedforward_net(normalized_residual_attention)
 
-        return out
+        return self.post_feedforward_layer_norm(
+            feedforward_outputs + normalized_residual_attention
+        )

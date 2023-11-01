@@ -25,10 +25,10 @@ class FeedForwardNet(hk.Module):
         FFN(x) = gelu(xW1 + b1)W2 + b2
 
         Args:
-            x (jnp.array): Normalized attention matrix with shape (batch_size, seq_len, embed_dim)
+            x (jnp.ndarray): Normalized attention matrix with shape (batch_size, seq_len, embed_dim)
 
         Returns:
-            jnp.array: The output of the feed-forward network
+            jnp.ndarray: The output of the feed-forward network
         """
 
         x = hk.Linear(self.hidden_dim)(x)

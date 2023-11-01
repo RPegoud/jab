@@ -22,17 +22,17 @@ class LayerNorm(hk.Module):
 
     def __call__(
         self,
-        x: jnp.array,
-    ) -> jnp.array:
+        x: jnp.ndarray,
+    ) -> jnp.ndarray:
         """
         Applies layer normalization on a given axis (i.e. feature).
 
         Args:
-            x (jnp.array): The array to normalize
+            x (jnp.ndarray): The array to normalize
             feature_axis (optional, int): The feature to normalize
 
         Returns:
-            jnp.array: The normalized, scaled and shifted array
+            jnp.ndarray: The normalized, scaled and shifted array
         """
 
         gamma = hk.get_parameter(

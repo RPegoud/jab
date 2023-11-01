@@ -1,1 +1,4 @@
 draft/
+charts/
+upload_chart.py
+*.env

@@ -7,19 +7,19 @@ Welcome to the JAX Lab (JAB for short)! This repository contains implementations
 <h3 align="left">🚀 Stack:</h3>
 <p align="left">
  <a href="" target="blank"><img align="center" src="https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/267_Python_logo-512.png" alt="" height="40" width="40" /> Python</a>
-   
+
  <a href="https://jax.readthedocs.io/en/latest/index.html" target="blank"><img align="center" src="https://upload.wikimedia.org/wikipedia/commons/8/86/Google_JAX_logo.svg" alt="" height="40" width="40" /> JAX</a>
- 
+
  <a href="https://dm-haiku.readthedocs.io/en/latest/" target="blank"><img align="center" src="https://avatars.githubusercontent.com/u/144367226?s=280&v=4" alt="" height="40" width="40" /> Haiku</a>
- 
+
  <a href="https://flax.readthedocs.io/en/latest/" target="blank"><img align="center" src="https://raw.githubusercontent.com/google/flax/main/images/flax_logo_250px.png" alt="" height="40" width="40" /> Flax</a>
- 
- <a href="https://optax.readthedocs.io/en/latest/" target="blank"><img align="center" src="https://optax.readthedocs.io/en/latest/_static/logo.svg" alt="" height="40" width="40" /> Optax</a>
+
+ <a href="https://optax.readthedocs.io/en/latest/" target="blank"><img align="center" src="https://optax.readthedocs.io/en/latest/_static/logo.svg" alt="" height="40" width="40" />Optax</a>
 </p>
 
 ## 🌟 ***Key Features***
 
-* 🐍  **Clean** and **beginner-friendly** implementation of **Deep Learning** in **JAX**
+* 🐍  **Clean** and **beginner-friendly** implementation of **Deep Learning algorithms** in **JAX**
 * ✍️ **Code walkthroughs** available [here](https://medium.com/@ryanpegoud)
 
 ## ✅ ***Progress***
