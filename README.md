@@ -47,10 +47,11 @@ Welcome to the JAX Lab (JAB for short)! This repository contains implementations
 
 * 🐍  **Clean** and **beginner-friendly** implementation of **Deep Learning algorithms** in **JAX**
 * ✍️ **Code walkthroughs** available [here](https://medium.com/@ryanpegoud)
+  * [Implementing a Transformer Encoder from Scratch with JAX and Haiku 🤖](https://towardsdatascience.com/implementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd), published in **Towards Data Science, Editors' Picks**
 
 ## ✅ ***Progress***
 
-*We're still in the early days of Jab, more implementations coming soon ;)*
+* Transformer Encoder
 
 ## ⏰ ***In progress***
 
